@@ -24,7 +24,7 @@ customer-segmentation-streamlit/
 │   └── ...
 │
 ├── notebooks/
-│   └── customer_segmentation_analysis.ipynb
+│   └── customer_seg.ipynb
 │
 ├── main.py
 ├── requirements.txt

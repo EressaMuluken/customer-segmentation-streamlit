@@ -10,12 +10,20 @@ from sklearn.mixture import GaussianMixture
 from sklearn.decomposition import PCA
 from sklearn.metrics import davies_bouldin_score, calinski_harabasz_score, silhouette_score
 from sklearn.preprocessing import StandardScaler
+import joblib 
 st.set_page_config(
     initial_sidebar_state='locked',
     layout='wide'
 )
 for key in st.session_state: 
   st.session_state[key] = st.session_state[key] 
+if 'current_model' not in st.session_state:
+    st.session_state['current_model'] = {
+        'KMeans':joblib.load('./models/kmeans_model.pkl'), 
+        'GMM': joblib.load('./models/GMM_model.pkl')
+        }
+if 'current_scaler' not in st.session_state:
+    st.session_state['current_scaler'] = joblib.load('./models/scaler.pkl')
 if 'pca_data' not in st.session_state:
     st.session_state['pca_data'] = None
 if 'segmentation_results' not in st.session_state:
@@ -548,6 +556,7 @@ with st.sidebar:
                 else: 
                     pca_data = create_pca(data[list(st.session_state['features'])])
                     results = {}
+                    st.session_state.current_model = {}
                     for algorithm in algorithms:
                         st.write(f"Training {algorithm}...")
                         model, labels, eval_metrics = train_model(data,st.session_state['features'],
@@ -557,6 +566,8 @@ with st.sidebar:
                             'labels': labels,
                             'evaluation_metrics': eval_metrics
                         },
+                        joblib.dump(model, f'./trained_new_models/{algorithm}.pkl')
+                        st.session_state.current_model[algorithm] = model
                     st.session_state.pca_data = pca_data
                     st.session_state.segmentation_results = results 
                     status.update(
@@ -732,15 +743,21 @@ with tab_pred:
     with parameter_col:
         with st.container(border=True): 
             par_left, par_right = st.columns(2)
+            input_data = {}
             for i, feature in enumerate(st.session_state.features):
                 if i%2 == 0:
                     with par_left:
-                        create_stComponent(data, feature)
+                       value = create_stComponent(data, feature)
                 else: 
                     with par_right:
-                        create_stComponent(data, feature)
-            
-            st.button('RUN SIMULATION', width='stretch', type='primary')
+                        value = create_stComponent(data, feature)
+                input_data[feature] = value
+            if st.button('RUN SIMULATION', width='stretch', type='primary'):
+                input_data_df = pd.DataFrame([input_data])
+                input_data_scaled = st.session_state.current_scaler.transform(input_data_df)
+                for algorithm, trained_model in st.session_state.current_model.items():
+                    pred_segment = trained_model.predict(input_data_scaled)[0]
+                    st.success(f'Customer is assigned to Cluster {pred_segment} using {algorithm}')
     with st.expander('Segmentation Performance', expanded=True):
         if 'segmentation_results' in st.session_state and st.session_state.segmentation_results != {}:
             data_pca = st.session_state.pca_data

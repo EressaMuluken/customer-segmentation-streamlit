@@ -94,7 +94,20 @@ def train_model(df, features, algorithm, settings, scaling=True):
 def plot_segmentation(pca_data, segmentation_result):
     n_plots = len(segmentation_result)
     fig, axes = plt.subplots(1, n_plots, figsize=(10 * n_plots, 6))
-    sns.set_style('white')
+    sns.set_theme(
+    style="white",
+    font="sans serif",
+    rc={
+        "font.size": 12,
+        "axes.titlesize": 16,
+        "axes.titleweight": "bold",
+        "axes.labelsize": 13,
+        "axes.labelweight": "bold",
+        "xtick.labelsize": 11,
+        "ytick.labelsize": 11,
+        "legend.fontsize": 11,
+    }
+    )
     fig.patch.set_alpha(0)
     if n_plots == 1:
         axes = [axes]
@@ -729,8 +742,6 @@ with tab_pred:
             
             st.button('RUN SIMULATION', width='stretch', type='primary')
     with st.expander('Segmentation Performance', expanded=True):
-        st.dataframe(model_evluation_metrics)
-        st.image('./notebooks/kmeans_gmm_segmentation_pca.png', width='stretch')
         if 'segmentation_results' in st.session_state and st.session_state.segmentation_results != {}:
             data_pca = st.session_state.pca_data
             results = st.session_state.segmentation_results
@@ -744,3 +755,6 @@ with tab_pred:
             st.dataframe(evaluation_df)
             fig = plot_segmentation(data_pca, results)
             st.pyplot(fig)
+        else: 
+            st.dataframe(model_evluation_metrics)
+            st.image('./notebooks/kmeans_gmm_segmentation_pca.png', width='stretch')

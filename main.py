@@ -50,6 +50,25 @@ col_plot_exclude = [
 ]
 if 'drop_click' not in st.session_state: 
   st.session_state['drop_click'] = False
+   
+@st.dialog('Reset Your Project')        
+def rest_fn():
+    st.write('This will rest and remove all training models and evaluation metrics to default')
+    if st.button('Submit', type='primary', width='stretch'):
+        st.session_state['current_model'] = {
+            'KMeans':joblib.load('./models/kmeans_model.pkl'), 
+            'GMM': joblib.load('./models/GMM_model.pkl')
+            }
+        st.session_state['current_scaler'] = joblib.load('./models/scaler.pkl')
+        st.session_state['pca_data'] = None
+        st.session_state['segmentation_results'] = {}
+        st.session_state['settings'] = {}
+        st.rerun()
+
+if 'features' not in st.session_state: 
+    st.session_state['features'] = ['Age', 'Income', 'Total_Spending',
+            'NumWebPurchases','NumStorePurchases',
+            'NumWebVisitsMonth','Recency']
 @st.cache_resource
 def standardize_data(x):
     scaler = StandardScaler()
@@ -443,10 +462,6 @@ p {
     color: #475569;
 }
 
-
-
-/* ---------- Main content ---------- */
-
 .block-container {
     padding-top: 2rem;
     padding-bottom: 3rem;
@@ -457,7 +472,6 @@ div.stTabs {
     font-weight: 500;
 }
 
-/*------unique------*/
 div[role="tab"] p {
     font-size: 18px !important;
     font-weight: 600 !important;
@@ -477,6 +491,11 @@ div[data-testid='stButton'] button p {
 """, unsafe_allow_html=True)
 
 with st.sidebar: 
+    st.markdown("""
+                    <p style="font-weight:600;color:gray;font-size:14px;">RESET</p>
+                    """, unsafe_allow_html=True)
+    if st.button('Reset', type='primary', width='stretch'):
+        rest_fn()
     st.markdown("""
                     <p style="font-weight:600;color:gray;font-size:14px;">TRAIN A NEW MODEL</p>
                     """, unsafe_allow_html=True)

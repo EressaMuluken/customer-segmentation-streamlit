@@ -176,7 +176,7 @@ These values are specific to the configuration and dataset used in the experimen
 Clone the repository:
 
 ```bash
-git clone <repository-url>
+git clone <https://github.com/EressaMuluken/customer-segmentation-streamlit>
 cd customer-segmentation-streamlit
 ```
 
